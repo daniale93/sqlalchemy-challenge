@@ -94,28 +94,6 @@ def stations():
     return jsonify(stations)
 
 
-@app.route("/api/v1.0/<start>")
-def start_date(start):
-    # Create our session (link) from Python to the DB
-    session = Session(engine)
-
-    sel = [func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)]
-    results = session.query(*sel).\
-              filter(Measurement.date >= year_ago).\
-              order_by(Measurement.date).all()
-
-    session.close()
-    # Convert into dictionary
-    tobs_df = []
-    for date, tobs in results:
-        tobs_dict = {}
-        tobs_dict[date] = tobs
-        tobs_df.append(tobs_dict)
-
-    
-
-    return jsonify(tobs_df)
-
 
 @app.route("/api/v1.0/tobs")
 def tobs():
@@ -146,6 +124,50 @@ def tobs():
     return jsonify(tobs_df)
 
 
+
+@app.route("/api/v1.0/<start>")
+def start_date(start):
+    # Create our session (link) from Python to the DB
+    session = Session(engine)
+
+    sel = [func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)]
+    results = session.query(*sel).\
+              filter(Measurement.date >= start).all()
+              
+
+    session.close()
+    # Convert into dictionary
+    tobs_df = []
+    for min,avg,max in results:
+        tobs_dict = {}
+        tobs_dict["Min"] = min
+        tobs_dict["Average"] = avg
+        tobs_dict["Max"] = max
+        tobs_df.append(tobs_dict)
+
+    return jsonify(tobs_df)
+
+@app.route("/api/v1.0/<start>/<stop>")
+def start_stop_dates(start, stop):
+    # Create our session (link) from Python to the DB
+    session = Session(engine)
+
+    sel = [func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)]
+    results = session.query(*sel).\
+              filter(Measurement.date >= start).filter(Measurement.date <= stop).all()
+              
+
+    session.close()
+    # Convert into dictionary
+    tobs_df = []
+    for min,avg,max in results:
+        tobs_dict = {}
+        tobs_dict["Min"] = min
+        tobs_dict["Average"] = avg
+        tobs_dict["Max"] = max
+        tobs_df.append(tobs_dict)
+
+    return jsonify(tobs_df)
 
 
 
